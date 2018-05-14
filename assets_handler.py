@@ -64,23 +64,24 @@ class Numbers:
         if large or small numbers are to be used. """
 
         self.score = {}
+        self.copy_score = {}
         self.large = large
 
         if self.large:
             for i in range(len(self.num_list)):
                 self.score[str(i)] = Asset(self.num_list[i], self.nums_path)
+                self.copy_score[str(i)] = Asset(self.num_list[i], self.nums_path)
         else:
             for i in range(len(self.small_num_list)):
                 self.score[str(i)] = Asset(self.small_num_list[i], self.nums_path)
+                self.copy_score[str(i)] = Asset(self.small_num_list[i], self.nums_path)
 
     def number(self, num):
         return self.score[num]
 
     # Create a new asset, so a number with the same digits could be displayed
     def new_number(self, num):
-        if self.large:
-            return Asset(self.num_list[num], self.nums_path)
-        return Asset(self.small_num_list[num], self.nums_path)
+        return self.copy_score[num]
 
     def generate_score(self, score_sprites, score):
 
@@ -108,7 +109,7 @@ class Numbers:
             # If a number contains same digits, create new assets
             for i in range(1, len(str_score)):
                 if str_score[i] == str_score[0] or str_score[i] == str_score[i - 1]:
-                    s = self.new_number(int(str_score[i]))
+                    s = self.new_number(str_score[i])
                 else:
                     s = self.number(str_score[i])
                 pos_x += s.rect.width + 2
