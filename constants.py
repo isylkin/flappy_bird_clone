@@ -1,6 +1,7 @@
 """
 Global constants
 """
+import os
 
 import pygame
 
@@ -25,4 +26,5 @@ BIRD_HEIGHT = 40
 BIRD_JUMP_SPEED = -70
 
 # Background asset path
-BKGD = pygame.image.load('assets/bg.png')
+BKGD = pygame.image.load(os.path.join("assets", "bg.png"))
+
