@@ -2,6 +2,7 @@
 This module holds the Bird class, which represents
 the controlled sprite on the screen.
 """
+import os
 
 import pygame
 from get_sprite import SpriteSheet
@@ -36,7 +37,8 @@ class Bird(pygame.sprite.Sprite):
         # List of sprites we can bump against
         self.level = None
 
-        sprite_sheet = SpriteSheet('assets\\bird.png')
+        sprite_sheet = SpriteSheet(os.path.join("assets", "bird.png"))
+
         # Load all the images into a list
         image = sprite_sheet.get_image(0, 0, 57, 39)
         self.flying_frames.append(image)
@@ -49,10 +51,10 @@ class Bird(pygame.sprite.Sprite):
         self.image = self.flying_frames[0]
 
         # Sounds
-        self.sfx_wing = pygame.mixer.Sound('assets\sfx\sfx_wing.wav')
-        self.sfx_point = pygame.mixer.Sound('assets\sfx\sfx_point.wav')
-        self.sfx_hit = pygame.mixer.Sound('assets\sfx\sfx_hit.wav')
-        self.sfx_die = pygame.mixer.Sound('assets\sfx\sfx_die.wav')
+        self.sfx_wing = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_wing.wav"))
+        self.sfx_point = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_point.wav"))
+        self.sfx_hit = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_hit.wav"))
+        self.sfx_die = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_die.wav"))
 
         self.pipe_hit_list = None
 

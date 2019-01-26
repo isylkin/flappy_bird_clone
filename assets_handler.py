@@ -1,6 +1,7 @@
 """
 Module for managing pipes.
 """
+import os
 
 import pygame
 from get_sprite import SpriteSheet
@@ -29,7 +30,7 @@ class Asset(pygame.sprite.Sprite):
 class Numbers:
     """ Handling numbers assets needed for score. """
 
-    nums_path = 'assets\\nums.png'
+    nums_path = os.path.join("assets", "nums.png")
 
     # Large numbers needed for a live score, added to a list
     num_0 = (4, 61, 24, 33)

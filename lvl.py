@@ -1,6 +1,7 @@
 """
 Module for creating and managing levels
 """
+import os
 
 import pygame
 import constants
@@ -36,7 +37,8 @@ class Level:
         self.numbers = assets_handler.Numbers(large=True)
 
         # Paths to sprite sheets
-        self.pipe_path = 'assets\pipe.png'
+        self.pipe_path = os.path.join("assets", "pipe.png")
+
 
     # Update everything on this level
     def update(self):

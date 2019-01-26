@@ -1,6 +1,7 @@
 """
 Module with all the game's menus
 """
+import os
 
 import pygame
 import constants
@@ -17,7 +18,7 @@ class MainMenu:
 
         # Objects to be displayed in main menu
         self.bird = Bird(395, 235)
-        self.assets_path = 'assets\menu.png'
+        self.assets_path = os.path.join("assets", "menu.png")
         self.start = assets_handler.Asset((345, 763, 144, 52), self.assets_path)
         self.start.rect = (345, 320)
         self.start_rect_object = pygame.Rect(345, 320, 144, 52)
@@ -72,7 +73,7 @@ class PreGameMenu:
         self.bird = bird
 
         self.sprite_list = pygame.sprite.Group()
-        self.assets_path = 'assets\menu.png'
+        self.assets_path = os.path.join("assets", "menu.png")
         self.get_ready = assets_handler.Asset((0, 792, 312, 85), self.assets_path)
         self.get_ready.rect = (275, 40)
         self.sprite_list.add(self.get_ready)
@@ -100,7 +101,7 @@ class GameOver:
         self.score = score
 
         self.sprite_list = pygame.sprite.Group()
-        self.assets_path = 'assets\menu.png'
+        self.assets_path = os.path.join("assets", "menu.png")
         self.game_over = assets_handler.Asset((0, 710, 340, 75), self.assets_path)
         self.game_over.rect = (270, 8)
         self.sprite_list.add(self.game_over)
