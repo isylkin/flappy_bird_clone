@@ -1,35 +1,33 @@
-"""
-Module for managing pipes.
-"""
 import os
-
 import pygame
-from get_sprite import SpriteSheet
+from typing import Tuple
 import constants
 
 
-class Asset(pygame.sprite.Sprite):
-    """ Pipe a user can collide with. """
+class SpriteSheet(object):
+    def __init__(self, file_name):
+        self.sprite_sheet = pygame.image.load(file_name).convert()
 
-    def __init__(self, sprite_sheet_data, assets_path):
-        """ Pipe constructor with 4 numbers array
-        and asset's file path expected to be passed. """
+    def get_image(self, x, y, width, height):
+        image = pygame.Surface([width, height]).convert()
+        image.blit(source=self.sprite_sheet,
+                   dest=(0, 0), area=(x, y, width, height))
+        image.set_colorkey(constants.VIOLET) # Violet as the transparent color
+        return image
+
+
+class Image(pygame.sprite.Sprite):
+    def __init__(self, sprite_sheet_data: Tuple, assets_path: str) -> None:
         super().__init__()
-
         sprite_sheet = SpriteSheet(assets_path)
-
-        # Grab the image for the pipe
         self.image = sprite_sheet.get_image(sprite_sheet_data[0],
                                             sprite_sheet_data[1],
                                             sprite_sheet_data[2],
-                                            sprite_sheet_data[3],
-                                            )
+                                            sprite_sheet_data[3],)
         self.rect = self.image.get_rect()
 
 
 class Numbers:
-    """ Handling numbers assets needed for score. """
-
     nums_path = os.path.join("assets", "nums.png")
 
     # Large numbers needed for a live score, added to a list
@@ -70,12 +68,12 @@ class Numbers:
 
         if self.large:
             for i in range(len(self.num_list)):
-                self.score[str(i)] = Asset(self.num_list[i], self.nums_path)
-                self.copy_score[str(i)] = Asset(self.num_list[i], self.nums_path)
+                self.score[str(i)] = Image(self.num_list[i], self.nums_path)
+                self.copy_score[str(i)] = Image(self.num_list[i], self.nums_path)
         else:
             for i in range(len(self.small_num_list)):
-                self.score[str(i)] = Asset(self.small_num_list[i], self.nums_path)
-                self.copy_score[str(i)] = Asset(self.small_num_list[i], self.nums_path)
+                self.score[str(i)] = Image(self.small_num_list[i], self.nums_path)
+                self.copy_score[str(i)] = Image(self.small_num_list[i], self.nums_path)
 
     def number(self, num):
         return self.score[num]

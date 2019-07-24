@@ -1,12 +1,8 @@
-"""
-Module with all the game's menus
-"""
 import os
-
 import pygame
 import constants
 from bird import Bird
-import assets_handler
+from assets_handler import Image, Numbers
 
 
 class MainMenu:
@@ -17,12 +13,17 @@ class MainMenu:
         self.bkg_scroll = 0.2
 
         # Objects to be displayed in main menu
-        self.bird = Bird(395, 235)
+        self.bird = Bird(constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
+                         constants.BIRD_JUMP_SPEED, constants.MAIN_MENU_POSITION,
+                         constants.SFX_WING_PATH, constants.SFX_POINT_PATH,
+                         constants.SFX_HIT_PATH, constants.SFX_DIE_PATH,
+                         constants.BIRD_SPRITE_SHEET_PATH, constants.BIRD_FRAMES_COORDINATES)
+
         self.assets_path = os.path.join("assets", "menu.png")
-        self.start = assets_handler.Asset((345, 763, 144, 52), self.assets_path)
+        self.start = Image((345, 763, 144, 52), self.assets_path)
         self.start.rect = (345, 320)
         self.start_rect_object = pygame.Rect(345, 320, 144, 52)
-        self.logo = assets_handler.Asset((0, 955, 500, 144), self.assets_path)
+        self.logo = Image((0, 955, 500, 144), self.assets_path)
         self.logo.rect = (177, 50)
 
         # Disclaimer variables
@@ -74,10 +75,10 @@ class PreGameMenu:
 
         self.sprite_list = pygame.sprite.Group()
         self.assets_path = os.path.join("assets", "menu.png")
-        self.get_ready = assets_handler.Asset((0, 792, 312, 85), self.assets_path)
+        self.get_ready = Image((0, 792, 312, 85), self.assets_path)
         self.get_ready.rect = (275, 40)
         self.sprite_list.add(self.get_ready)
-        self.tap = assets_handler.Asset((102, 430, 145, 184), self.assets_path)
+        self.tap = Image((102, 430, 145, 184), self.assets_path)
         self.tap.rect = (460, 153)
         self.sprite_list.add(self.tap)
 
@@ -102,15 +103,15 @@ class GameOver:
 
         self.sprite_list = pygame.sprite.Group()
         self.assets_path = os.path.join("assets", "menu.png")
-        self.game_over = assets_handler.Asset((0, 710, 340, 75), self.assets_path)
+        self.game_over = Image((0, 710, 340, 75), self.assets_path)
         self.game_over.rect = (270, 8)
         self.sprite_list.add(self.game_over)
 
-        self.summary = assets_handler.Asset((0, 202, 411, 215), self.assets_path)
+        self.summary = Image((0, 202, 411, 215), self.assets_path)
         self.summary.rect = (230, 140)
         self.sprite_list.add(self.summary)
 
-        self.ok_button = assets_handler.Asset((357, 477, 150, 54), self.assets_path)
+        self.ok_button = Image((357, 477, 150, 54), self.assets_path)
         self.ok_button.rect = (357, 390)
         self.ok_button_rect_object = pygame.Rect(357, 390, 150, 54)
         self.sprite_list.add(self.ok_button)
@@ -118,7 +119,7 @@ class GameOver:
         self.hover = False
         self.restart = False
 
-        self.nums = assets_handler.Numbers(large=False)
+        self.nums = Numbers(large=False)
         self.score_sprites = pygame.sprite.Group()
         self.score_sprites.empty()
 

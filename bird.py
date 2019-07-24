@@ -1,70 +1,50 @@
-"""
-This module holds the Bird class, which represents
-the controlled sprite on the screen.
-"""
-import os
-
 import pygame
-from get_sprite import SpriteSheet
 import constants
-
-pygame.mixer.init()
+from typing import Tuple, List
+from assets_handler import SpriteSheet
 
 
 class Bird(pygame.sprite.Sprite):
-    """ The class represents the bird
-    controlled by the player """
-
-    WIDTH = constants.BIRD_WIDTH
-    HEIGHT = constants.BIRD_HEIGHT
-    JUMP_SPEED = constants.BIRD_JUMP_SPEED
-
-    def __init__(self, x, y):
-
-        # Call the parent's constructor
-        super(Bird, self).__init__()
-        # --- Attributes
-        self.x, self.y = x, y
-        self.fall_speed = 0
-
-        self.score = 0
-
-        self.hit = False
-
-        # All the images for bird's animation
-        self.flying_frames = []
-
-        # List of sprites we can bump against
+    def __init__(self, width: int, height: int, jump_speed: int,
+                 starting_position: Tuple[int, int],
+                 sfx_wing_path: str, sfx_point_path: str,
+                 sfx_hit_path: str, sfx_die_path: str,
+                 sprite_sheet_path: str, frames_coordinates: List) -> None:
+        super().__init__()
         self.level = None
 
-        sprite_sheet = SpriteSheet(os.path.join("assets", "bird.png"))
+        self.width = width
+        self.height = height
+        self.jump_speed = jump_speed
+        self.fall_speed = 0
+        self.x, self.y = starting_position
 
-        # Load all the images into a list
-        image = sprite_sheet.get_image(0, 0, 57, 39)
-        self.flying_frames.append(image)
-        image = sprite_sheet.get_image(97, 0, 57, 39)
-        self.flying_frames.append(image)
-        image = sprite_sheet.get_image(193, 0, 57, 39)
-        self.flying_frames.append(image)
+        self.animation_frames = []
+        sprite_sheet = SpriteSheet(sprite_sheet_path)
+        for coord in frames_coordinates:
+            frame = sprite_sheet.get_image(x=coord['x'], y=coord['y'],
+                                           width=self.width,
+                                           height=self.height)
+            self.animation_frames.append(frame)
 
-        # Set the image the player starts with
-        self.image = self.flying_frames[0]
+        self.sfx_wing = pygame.mixer.Sound(sfx_wing_path)
+        self.sfx_point = pygame.mixer.Sound(sfx_point_path)
+        self.sfx_hit = pygame.mixer.Sound(sfx_hit_path)
+        self.sfx_die = pygame.mixer.Sound(sfx_die_path)
 
-        # Sounds
-        self.sfx_wing = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_wing.wav"))
-        self.sfx_point = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_point.wav"))
-        self.sfx_hit = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_hit.wav"))
-        self.sfx_die = pygame.mixer.Sound(os.path.join("assets", "sfx", "sfx_die.wav"))
-
-        self.pipe_hit_list = None
+        self.is_obstacle_hit = False
 
     @property
-    def jump(self):
-        if not self.pipe_hit_list:
-            self.sfx_wing.play()
-            self.fall_speed = Bird.JUMP_SPEED
+    def rect(self) -> pygame.Rect:
+        return pygame.Rect(self.x, self.y, self.width, self.height)
 
-    def update(self, delta_time):
+    @property
+    def jump(self) -> None:
+        if not self.is_obstacle_hit:
+            self.sfx_wing.play()
+            self.fall_speed = self.jump_speed
+
+    def update(self, delta_time: float) -> None:
         # Increase falling speed with time
         self.y -= self.fall_speed * delta_time
         self.fall_speed -= 50 * delta_time
@@ -80,31 +60,26 @@ class Bird(pygame.sprite.Sprite):
 
             self.sfx_hit.play()
             self.sfx_die.play()
-            self.hit = True
+            self.is_obstacle_hit = True
+            return
 
-        # See if we hit a pipe
-        pipe_hit_list = pygame.sprite.spritecollide(self, self.level.pipe_list, False)
+        pipe_hit_list = pygame.sprite.spritecollide(self, self.level.pipe_sprites, False)
         for pipe in pipe_hit_list:
-            self.pipe_hit_list = pipe_hit_list
             self.level.pipe_scroll = 0
             self.level.bkg_scroll = 0
-            self.flying_frames = [self.flying_frames[1]] * 3
+            self.animation_frames = [self.animation_frames[1]] * 3
 
             self.sfx_hit.play()
-            self.hit = True
             self.sfx_die.play()
+            self.is_obstacle_hit = True
+            return
 
     @property
     def animate(self):
-        """ Animate a bird's image """
         game_time = pygame.time.get_ticks()
         if game_time % 400 >= 200:
-            return self.flying_frames[1]
+            return self.animation_frames[1]
         elif game_time % 400 >= 100:
-            return self.flying_frames[2]
+            return self.animation_frames[2]
         else:
-            return self.flying_frames[0]
-
-    @property
-    def rect(self):
-        return pygame.Rect(self.x, self.y, Bird.WIDTH, Bird.HEIGHT)
+            return self.animation_frames[0]

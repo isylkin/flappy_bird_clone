@@ -1,8 +1,4 @@
-"""
-Main function of the game
-"""
-
-import os, sys, pygame
+import pygame
 import constants
 from lvl import Level01
 import time
@@ -21,23 +17,25 @@ pygame.font.init()
 DISPLAY = (constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT)
 screen = pygame.display.set_mode(DISPLAY)
 screen_rect = screen.get_rect()
-background = constants.BKGD.convert()
+background = constants.BACKGROUND.convert()
 
 pygame.display.set_caption('Flappy Bird')
 
 
 def main():
-    bird = Bird(388, 231)
+    bird = Bird(constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
+                constants.BIRD_JUMP_SPEED, constants.BIRD_STARTING_POSITION,
+                constants.SFX_WING_PATH, constants.SFX_POINT_PATH,
+                constants.SFX_HIT_PATH, constants.SFX_DIE_PATH,
+                constants.BIRD_SPRITE_SHEET_PATH, constants.BIRD_FRAMES_COORDINATES)
 
     level_list = list()
     level_list.append(Level01(bird, background))
 
     current_level_no = 0
     current_level = level_list[current_level_no]
-    current_level.generate_level()
+    current_level.create_level()
     bird.level = current_level
-
-    active_sprite_list = pygame.sprite.Group()
 
     # Create and handle main menu
     m = menus.MainMenu(background)
@@ -87,17 +85,13 @@ def main():
 
         delta_time = start_time - time.time()
 
-        active_sprite_list.update()
         current_level.update()
-
         current_level.draw(screen)
-        active_sprite_list.draw(screen)
 
-        bird.update(delta_time / 100)
         screen.blit(bird.animate, bird.rect)
+        bird.update(delta_time / 100)
 
-        if bird.hit:
-
+        if bird.is_obstacle_hit:
             # Create and handle Game Over screen, if a bird hit any pipe or ground
             go = menus.GameOver(current_level.score)
             while not go.restart:
