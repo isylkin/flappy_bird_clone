@@ -36,27 +36,28 @@ def main():
     current_level = level_list[current_level_no]
     current_level.create_level()
     bird.level = current_level
+    go = menus.GameOverScreen()
 
     # Create and handle main menu
-    m = menus.MainMenu(background)
-    while not m.started:
+    m = menus.MainMenu(bird, background, constants.MENU_ASSETS)
+    while not m.is_started:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 raise SystemExit('QUIT')
-            elif event.type == pygame.MOUSEBUTTONUP and m.hover:
-                m.started = True
+            elif event.type == pygame.MOUSEBUTTONUP and m.is_hovered:
+                m.is_started = True
         m.update()
         m.draw(screen)
         pygame.display.flip()
 
     # Create pre game screen
-    pgs = menus.PreGameMenu(background, bird)
+    pgs = menus.GetReadyMenu(bird, background, constants.MENU_ASSETS)
 
     # Main game loop
     while True:
 
         # Handle pre game screen inside the main loop
-        while not pgs.tapped:
+        while not pgs.is_tapped:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     raise SystemExit('QUIT')
@@ -68,7 +69,7 @@ def main():
                     bird.jump
                     start_time = time.time() - 4
                     clock = pygame.time.Clock()
-                    pgs.tapped = True
+                    pgs.is_tapped = True
             pgs.draw(screen)
             pygame.display.flip()
 
@@ -92,17 +93,14 @@ def main():
         bird.update(delta_time / 100)
 
         if bird.is_obstacle_hit:
-            # Create and handle Game Over screen, if a bird hit any pipe or ground
-            go = menus.GameOver(current_level.score)
+            go.update()
+            go.draw(screen, current_level.score)
             while not go.restart:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         raise SystemExit('QUIT')
-                    elif event.type == pygame.MOUSEBUTTONUP and go.hover:
+                    elif event.type == pygame.MOUSEBUTTONUP and go.is_hovered:
                         main()
-
-                go.update()
-                go.draw(screen)
                 pygame.display.flip()
 
         clock.tick(65)

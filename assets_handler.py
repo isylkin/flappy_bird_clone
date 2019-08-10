@@ -17,20 +17,20 @@ class SpriteSheet(object):
 
 
 class Image(pygame.sprite.Sprite):
-    def __init__(self, sprite_sheet_data: Tuple, assets_path: str) -> None:
+    def __init__(self, sprite_sheet_coords: Tuple, assets_path: str) -> None:
         super().__init__()
         sprite_sheet = SpriteSheet(assets_path)
-        self.image = sprite_sheet.get_image(sprite_sheet_data[0],
-                                            sprite_sheet_data[1],
-                                            sprite_sheet_data[2],
-                                            sprite_sheet_data[3],)
+        self.image = sprite_sheet.get_image(sprite_sheet_coords[0],
+                                            sprite_sheet_coords[1],
+                                            sprite_sheet_coords[2],
+                                            sprite_sheet_coords[3],)
         self.rect = self.image.get_rect()
 
 
 class Numbers:
     nums_path = os.path.join("assets", "nums.png")
 
-    # Large numbers needed for a live score, added to a list
+    # Large numbers needed for a live score
     num_0 = (4, 61, 24, 33)
     num_1 = (7, 122, 24, 33)
     num_2 = (7, 178, 24, 33)
@@ -44,7 +44,7 @@ class Numbers:
     num_list = [num_0, num_1, num_2, num_3, num_4,
                 num_5, num_6, num_7, num_8, num_9]
 
-    # Small numbers needed for a score in the summary. added to a list
+    # Small numbers needed for a score in the summary
     s_num_0 = (356, 0, 22, 25)
     s_num_1 = (2, 273, 22, 24)
     s_num_2 = (137, 0, 22, 25)
@@ -59,9 +59,6 @@ class Numbers:
                       s_num_5, s_num_6, s_num_7, s_num_8, s_num_9]
 
     def __init__(self, large):
-        """ Constructor with a boolean value expected to determine
-        if large or small numbers are to be used. """
-
         self.score = {}
         self.copy_score = {}
         self.large = large

@@ -1,138 +1,119 @@
-import os
 import pygame
 import constants
 from bird import Bird
 from assets_handler import Image, Numbers
 
 
-class MainMenu:
-    def __init__(self, background):
-        # Background variables
-        self.background = background
-        self.background_x = 0
-        self.bkg_scroll = 0.2
-
-        # Objects to be displayed in main menu
-        self.bird = Bird(constants.BIRD_WIDTH, constants.BIRD_HEIGHT,
-                         constants.BIRD_JUMP_SPEED, constants.MAIN_MENU_POSITION,
-                         constants.SFX_WING_PATH, constants.SFX_POINT_PATH,
-                         constants.SFX_HIT_PATH, constants.SFX_DIE_PATH,
-                         constants.BIRD_SPRITE_SHEET_PATH, constants.BIRD_FRAMES_COORDINATES)
-
-        self.assets_path = os.path.join("assets", "menu.png")
-        self.start = Image((345, 763, 144, 52), self.assets_path)
-        self.start.rect = (345, 320)
-        self.start_rect_object = pygame.Rect(345, 320, 144, 52)
-        self.logo = Image((0, 955, 500, 144), self.assets_path)
-        self.logo.rect = (177, 50)
-
-        # Disclaimer variables
-        self.font_17 = pygame.font.SysFont('Comic Sans MS', 17)
-        self.disclaimer = self.font_17.render('Non-commercial Flappy Bird clone', False, (0, 0, 255))
-        self.font_20 = pygame.font.SysFont('Comic Sans MS', 20)
-        self.author = self.font_17.render('made by Ivan', False, (0, 0, 255))
-        self.email = self.font_17.render('ivan.sylkin.k@gmail.com', False, (0, 0, 255))
-
+class BaseMenu:
+    def __init__(self, bird: Bird, background: pygame.Surface,
+                 menu_assets_path: str) -> None:
+        self.bird = bird
+        self.background_image = background
+        self.menu_assets = menu_assets_path
+        self.background_x = constants.BACKGROUND_X
+        self.background_scroll_speed = constants.BACKGROUND_SCROLL_SPEED
         self.sprite_list = pygame.sprite.Group()
-        self.sprite_list.add(self.start)
-        self.sprite_list.add(self.logo)
 
-        self.hover = False
-        self.started = False
-
-    def draw(self, screen):
-        rel_x = self.background_x % self.background.get_rect().width
-        # Blit the image on the pos rel_x - bkgd_width
-        screen.blit(self.background, (rel_x - self.background.get_rect().width, 0))
-        # Blit the same image on the rel_x position to scroll bcgd smoothly
+    def _scroll_background_image(self, screen: pygame.Surface) -> None:
+        rel_x = self.background_x % self.background_image.get_rect().width
+        screen.blit(self.background_image,
+                    (rel_x - self.background_image.get_rect().width, 0))
         if rel_x < constants.SCREEN_WIDTH:
-            screen.blit(self.background, (rel_x, 0))
-        self.background_x -= self.bkg_scroll
+            screen.blit(self.background_image, (rel_x, 0))
+        self.background_x -= self.background_scroll_speed
 
+    def draw(self, screen: pygame.Surface):
+        self._scroll_background_image(screen)
         self.sprite_list.draw(screen)
         screen.blit(self.bird.animate, self.bird.rect)
-        screen.blit(self.disclaimer, (280, 400))
-        screen.blit(self.author, (365, 425))
-        screen.blit(self.email, (325, 445))
+
+
+class MainMenu(BaseMenu):
+    def __init__(self, bird: Bird, background: pygame.Surface,
+                 menu_assets_path: str) -> None:
+        super().__init__(bird, background, menu_assets_path)
+        self.start_button = Image(constants.START_BUTTON_SPRITE_COORDS,
+                                  self.menu_assets)
+        self.start_button.rect = constants.START_BUTTON_POSITION
+        self.start_button_rect_object = constants.START_BUTTON_COORDINATES
+
+        self.logo = Image(constants.LOGO_SPRITE_COORDS, self.menu_assets)
+        self.logo.rect = constants.LOGO_POSITION
+
+        self.sprite_list.add(self.start_button)
+        self.sprite_list.add(self.logo)
+
+        self.is_hovered = False
+        self.is_started = False
 
     def update(self):
         # Change hover status and cursor on hover over a start button
-        if self.start_rect_object.collidepoint(pygame.mouse.get_pos()):
+        if self.start_button_rect_object.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_cursor(*pygame.cursors.tri_left)
-            self.hover = True
+            self.is_hovered = True
         else:
             pygame.mouse.set_cursor(*pygame.cursors.arrow)
-            self.hover = False
+            self.is_hovered = False
 
 
-class PreGameMenu:
-    def __init__(self, background, bird):
-        self.background = background
-        self.background_x = 0
-        self.bkg_scroll = 0.2
+class GetReadyMenu(BaseMenu):
+    def __init__(self, bird: Bird, background: pygame.Surface,
+                 menu_assets_path: str) -> None:
+        super().__init__(bird, background, menu_assets_path)
+        self.get_ready_button = Image(constants.GET_READY_BUTTON_SPRITE_COORDS,
+                                      self.menu_assets)
+        self.get_ready_button.rect = constants.GET_READY_BUTTON_POSITION
 
-        self.bird = bird
+        self.tap_tip = Image(constants.TAP_TIP_SPRITE_COORDS,
+                             self.menu_assets)
+        self.tap_tip.rect = constants.TAP_TIP_POSITION
 
+        self.sprite_list.add(self.get_ready_button)
+        self.sprite_list.add(self.tap_tip)
+
+        self.is_tapped = False
+
+
+class GameOverScreen:
+    def __init__(self) -> None:
         self.sprite_list = pygame.sprite.Group()
-        self.assets_path = os.path.join("assets", "menu.png")
-        self.get_ready = Image((0, 792, 312, 85), self.assets_path)
-        self.get_ready.rect = (275, 40)
-        self.sprite_list.add(self.get_ready)
-        self.tap = Image((102, 430, 145, 184), self.assets_path)
-        self.tap.rect = (460, 153)
-        self.sprite_list.add(self.tap)
+        self.menu_assets = constants.MENU_ASSETS
+        self.game_over_image = Image(constants.GAME_OVER_SPRITE_COORDS,
+                                     self.menu_assets)
+        self.game_over_image.rect = constants.GAME_OVER_POSITION
 
-        self.tapped = False
+        self.summary_banner = Image(constants.SUMMARY_SPRITE_COORD,
+                                    self.menu_assets)
+        self.summary_banner.rect = constants.SUMMARY_POSITION
 
-    def draw(self, screen):
-        rel_x = self.background_x % self.background.get_rect().width
-        # Blit the image on the pos rel_x - bkgd_width
-        screen.blit(self.background, (rel_x - self.background.get_rect().width, 0))
-        # Blit the same image on the rel_x position to scroll bcgd smoothly
-        if rel_x < constants.SCREEN_WIDTH:
-            screen.blit(self.background, (rel_x, 0))
-        self.background_x -= self.bkg_scroll
+        self.ok_button = Image(constants.OK_BUTTON_SPRITE_COORDS,
+                               self.menu_assets)
+        self.ok_button.rect = constants.OK_BUTTON_POSITION
+        self.ok_button_rect_object = constants.OK_BUTTON_COORDINATES
 
-        self.sprite_list.draw(screen)
-        screen.blit(self.bird.animate, self.bird.rect)
-
-
-class GameOver:
-    def __init__(self, score):
-        self.score = score
-
-        self.sprite_list = pygame.sprite.Group()
-        self.assets_path = os.path.join("assets", "menu.png")
-        self.game_over = Image((0, 710, 340, 75), self.assets_path)
-        self.game_over.rect = (270, 8)
-        self.sprite_list.add(self.game_over)
-
-        self.summary = Image((0, 202, 411, 215), self.assets_path)
-        self.summary.rect = (230, 140)
-        self.sprite_list.add(self.summary)
-
-        self.ok_button = Image((357, 477, 150, 54), self.assets_path)
-        self.ok_button.rect = (357, 390)
-        self.ok_button_rect_object = pygame.Rect(357, 390, 150, 54)
+        self.sprite_list.add(self.game_over_image)
+        self.sprite_list.add(self.summary_banner)
         self.sprite_list.add(self.ok_button)
 
-        self.hover = False
+        self.is_hovered = False
         self.restart = False
 
         self.nums = Numbers(large=False)
-        self.score_sprites = pygame.sprite.Group()
-        self.score_sprites.empty()
 
-        self.score_sprites = self.nums.generate_score(self.score_sprites, self.score)
-
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface, score: int):
         self.sprite_list.draw(screen)
-        self.score_sprites.draw(screen)
+        score_sprites = self._generate_score_sprites(score)
+        score_sprites.draw(screen)
+
+    def _generate_score_sprites(self, score):
+        score_sprites = pygame.sprite.Group()
+        score_sprites = self.nums.generate_score(score_sprites, score)
+        return score_sprites
 
     def update(self):
         if self.ok_button_rect_object.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_cursor(*pygame.cursors.tri_left)
-            self.hover = True
+            self.is_hovered = True
         else:
             pygame.mouse.set_cursor(*pygame.cursors.arrow)
-            self.hover = False
+            self.is_hovered = False
