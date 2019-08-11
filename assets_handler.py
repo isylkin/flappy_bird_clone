@@ -1,116 +1,112 @@
-import os
 import pygame
-from typing import Tuple
 import constants
+from typing import Tuple, Dict, List
 
 
-class SpriteSheet(object):
-    def __init__(self, file_name):
+class SpriteSheet:
+    def __init__(self, file_name: str) -> None:
         self.sprite_sheet = pygame.image.load(file_name).convert()
 
-    def get_image(self, x, y, width, height):
+    def get_image(self, x: int, y: int, width: int, height: int) -> pygame.Surface:
         image = pygame.Surface([width, height]).convert()
         image.blit(source=self.sprite_sheet,
                    dest=(0, 0), area=(x, y, width, height))
-        image.set_colorkey(constants.VIOLET) # Violet as the transparent color
+        image.set_colorkey(constants.VIOLET)  # Violet as the transparent color
         return image
 
 
 class Image(pygame.sprite.Sprite):
-    def __init__(self, sprite_sheet_coords: Tuple, assets_path: str) -> None:
+    def __init__(self, assets_path: str,
+                 sprite_coords: Tuple[int, int, int, int],
+                 rect: Tuple[int, int],
+                 rect_object: pygame.Rect = None) -> None:
         super().__init__()
         sprite_sheet = SpriteSheet(assets_path)
-        self.image = sprite_sheet.get_image(sprite_sheet_coords[0],
-                                            sprite_sheet_coords[1],
-                                            sprite_sheet_coords[2],
-                                            sprite_sheet_coords[3],)
-        self.rect = self.image.get_rect()
+        self.image = sprite_sheet.get_image(sprite_coords[0],
+                                            sprite_coords[1],
+                                            sprite_coords[2],
+                                            sprite_coords[3],)
+        self._rect = self.image.get_rect()
+        self._rect.x = rect[0]
+        self._rect.y = rect[1]
+
+        self._rect_object = rect_object
+
+    @property
+    def rect(self):
+        return self._rect
+
+    @rect.setter
+    def rect(self, value):
+        self._rect = self.image.get_rect()
+        self._rect.x = value[0]
+        self._rect.y = value[1]
+
+    @property
+    def rect_object(self):
+        return self._rect_object
+
+    @rect_object.setter
+    def rect_object(self, value):
+        self._rect_object = value
 
 
 class Numbers:
-    nums_path = os.path.join("assets", "nums.png")
+    def __init__(self, nums_assets_path: str,
+                 big_nums_coords: List, big_nums_position: Tuple [int, int],
+                 small_nums_coords: List, small_nums_position: Tuple[int, int]) -> None:
+        self.nums_assets = nums_assets_path
+        self.big_nums_coords = big_nums_coords  # Live score
+        self.big_nums_position = big_nums_position
+        self.small_nums_coords = small_nums_coords  # Summary
+        self.small_nums_position = small_nums_position
+        self.big_nums_images = {}
+        self.small_nums_images = {}
 
-    # Large numbers needed for a live score
-    num_0 = (4, 61, 24, 33)
-    num_1 = (7, 122, 24, 33)
-    num_2 = (7, 178, 24, 33)
-    num_3 = (7, 233, 24, 33)
-    num_4 = (0, 312, 24, 33)
-    num_5 = (0, 353, 24, 33)
-    num_6 = (2, 0, 24, 33)
-    num_7 = (36, 0, 24, 33)
-    num_8 = (71, 0, 24, 33)
-    num_9 = (105, 0, 24, 33)
-    num_list = [num_0, num_1, num_2, num_3, num_4,
-                num_5, num_6, num_7, num_8, num_9]
+        for num in range(len(self.big_nums_coords)):
+            self.big_nums_images[f'{num}'] = Image(self.nums_assets,
+                                                   self.big_nums_coords[num],
+                                                   self.big_nums_position)
+            self.small_nums_images[f'{num}'] = Image(self.nums_assets,
+                                                     self.small_nums_coords[num],
+                                                     self.small_nums_position)
 
-    # Small numbers needed for a score in the summary
-    s_num_0 = (356, 0, 22, 25)
-    s_num_1 = (2, 273, 22, 24)
-    s_num_2 = (137, 0, 22, 25)
-    s_num_3 = (164, 0, 22, 25)
-    s_num_4 = (191, 0, 22, 25)
-    s_num_5 = (219, 0, 22, 25)
-    s_num_6 = (247, 0, 22, 25)
-    s_num_7 = (274, 0, 22, 25)
-    s_num_8 = (302, 0, 22, 25)
-    s_num_9 = (329, 0, 22, 25)
-    small_num_list = [s_num_0, s_num_1, s_num_2, s_num_3, s_num_4,
-                      s_num_5, s_num_6, s_num_7, s_num_8, s_num_9]
-
-    def __init__(self, large):
-        self.score = {}
-        self.copy_score = {}
-        self.large = large
-
-        if self.large:
-            for i in range(len(self.num_list)):
-                self.score[str(i)] = Image(self.num_list[i], self.nums_path)
-                self.copy_score[str(i)] = Image(self.num_list[i], self.nums_path)
-        else:
-            for i in range(len(self.small_num_list)):
-                self.score[str(i)] = Image(self.small_num_list[i], self.nums_path)
-                self.copy_score[str(i)] = Image(self.small_num_list[i], self.nums_path)
-
-    def number(self, num):
-        return self.score[num]
-
-    # Create a new asset, so a number with the same digits could be displayed
-    def new_number(self, num):
-        return self.copy_score[num]
-
-    def generate_score(self, score_sprites, score):
-
-        score_sprites.empty()  # Clear a score sprite
-
+    def generate_score(self, score: int, is_big: bool) -> pygame.sprite.Group:
+        score_sprites = pygame.sprite.Group()
         str_score = str(score)
-        s = self.number(str_score[0])
+        nums_images, nums_coords, nums_position = self._get_nums_data(is_big)
 
-        # Set a score's position depending on its size
-        if self.large:
-            pos_x = constants.SCREEN_WIDTH / 2 - 10
-            pos_y = 10
-        else:
-            pos_x = 553
-            pos_y = 205
+        first_number = nums_images[str_score[0]]
+        pos_x = first_number.rect[0]
+        score_sprites.add(first_number)
 
-        s.rect.x = pos_x
-        s.rect.y = pos_y
-
-        score_sprites.add(s)
-
-        # If a score has more digits than one, add the second
-        # and further digits to the right
-        if len(str_score) > 1:
-            # If a number contains same digits, create new assets
-            for i in range(1, len(str_score)):
-                if str_score[i] == str_score[0] or str_score[i] == str_score[i - 1]:
-                    s = self.new_number(str_score[i])
-                else:
-                    s = self.number(str_score[i])
-                pos_x += s.rect.width + 2
-                s.rect.x = pos_x
-                s.rect.y = pos_y
-                score_sprites.add(s)
+        self._add_extra_numbers(pos_x, str_score, nums_images,
+                                nums_coords, nums_position, score_sprites)
 
         return score_sprites
+
+    def _get_nums_data(self, is_big: bool) -> Tuple:
+        if is_big:
+            nums_images = self.big_nums_images
+            nums_coords = self.big_nums_coords
+            nums_position = self.big_nums_position
+        else:
+            nums_images = self.small_nums_images
+            nums_coords = self.small_nums_coords
+            nums_position = self.small_nums_position
+        return nums_images, nums_coords, nums_position
+
+    def _add_extra_numbers(self, pos_x: int, score: str, nums_images: Dict,
+                           nums_coords: List, nums_position: Tuple,
+                           score_sprites: pygame.sprite.Group) -> None:
+        if len(score) > 1:
+            for i in range(1, len(score)):
+                if score[i] == score[0] or score[i] == score[i - 1]:
+                    extra_number = Image(self.nums_assets,
+                                         nums_coords[i],
+                                         nums_position)
+                else:
+                    extra_number = nums_images[score[i]]
+                pos_x += extra_number.rect.width + 2
+                extra_number.rect = (pos_x, nums_position[1])
+                score_sprites.add(extra_number)

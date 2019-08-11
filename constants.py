@@ -64,3 +64,17 @@ SUMMARY_POSITION = (230, 140)
 OK_BUTTON_SPRITE_COORDS = (357, 477, 150, 54)
 OK_BUTTON_POSITION = (357, 390)
 OK_BUTTON_COORDINATES = pygame.Rect(357, 390, 150, 54)
+
+# NUMBERS
+NUMBERS_ASSETS = os.path.join("assets", "nums.png")
+BIG_NUMS_SPRITE_COORDS = [(4, 61, 24, 33), (7, 122, 24, 33), (7, 178, 24, 33),
+                          (7, 233, 24, 33), (0, 312, 24, 33), (0, 353, 24, 33),
+                          (2, 0, 24, 33), (36, 0, 24, 33), (71, 0, 24, 33),
+                          (105, 0, 24, 33)]
+BIG_NUMS_POSITION = (SCREEN_WIDTH / 2 - 10, 10)
+
+SMALL_NUMS_SPRITE_COORDS = [(356, 0, 22, 25), (2, 273, 22, 24), (137, 0, 22, 25),
+                            (164, 0, 22, 25), (191, 0, 22, 25), (219, 0, 22, 25),
+                            (247, 0, 22, 25), (274, 0, 22, 25), (302, 0, 22, 25),
+                            (329, 0, 22, 25)]
+SMALL_NUMS_POSITION = (553, 205)

@@ -20,8 +20,11 @@ class Level:
         self.increase_speed_milestone = constants.INCREASE_SPEED_MILESTONE
 
         self.score = 0
-        self.score_sprites = pygame.sprite.Group()
-        self.numbers = Numbers(large=True)
+        self.nums = Numbers(constants.NUMBERS_ASSETS,
+                            constants.BIG_NUMS_SPRITE_COORDS,
+                            constants.BIG_NUMS_POSITION,
+                            constants.SMALL_NUMS_SPRITE_COORDS,
+                            constants.SMALL_NUMS_POSITION)
 
     def update(self) -> None:
         self._scroll_pipes()
@@ -42,8 +45,8 @@ class Level:
             if self._is_obstacle_passed(self.bird, obstacle=pipe):
                 self.score += 1
                 self.bird.sfx_point.play()
-        self.score_sprites = self.numbers.generate_score(self.score_sprites,
-                                                         self.score)
+        self.score_sprites = self.nums.generate_score(self.score,
+                                                      is_big=True)
 
     def _is_obstacle_passed(self, bird: Bird,
                             obstacle: pygame.sprite.Sprite) -> bool:
@@ -112,7 +115,7 @@ class Level01(Level):
 
     def _create_pipe_sprites(self) -> None:
         for pipe in self.level:
-            p = Image(pipe[0], self.pipe_assets)
-            p.rect.x = pipe[1]
-            p.rect.y = pipe[2]
+            p = Image(self.pipe_assets,
+                      sprite_coords=pipe[0],
+                      rect=(pipe[1], pipe[2]))
             self.pipe_sprites.add(p)
